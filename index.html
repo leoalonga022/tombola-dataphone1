@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tómbola Virtual - DataPhone Meta Volante Pospago</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&family=Teko:wght@600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        banner: ['Teko', 'sans-serif'],
+                    },
+                    colors: {
+                        dp: {
+                            navy: '#020817',
+                            cardBg: 'rgba(5, 18, 42, 0.85)',
+                            cyan: '#00F0FF',
+                            cyanGlow: '#00A3FF',
+                            orange: '#FF6B00',
+                            orangeHover: '#FF8800',
+                            orangeLight: '#FFA800',
+                            darkBlue: '#0A1B3A',
+                            borderCyan: 'rgba(0, 240, 255, 0.35)',
+                            borderOrange: 'rgba(255, 107, 0, 0.4)'
+                        }
+                    },
+                    animation: {
+                        'glow-cyan': 'glowCyan 2.5s infinite alternate',
+                        'spin-slow': 'spin 12s linear infinite',
+                        'float': 'float 4s ease-in-out infinite',
+                        'marquee': 'marquee 22s linear infinite',
+                    },
+                    keyframes: {
+                        glowCyan: {
+                            '0%': { boxShadow: '0 0 15px rgba(0, 240, 255, 0.2), inset 0 0 10px rgba(0, 240, 255, 0.1)' },
+                            '100%': { boxShadow: '0 0 30px rgba(0, 240, 255, 0.6), inset 0 0 18px rgba(0, 240, 255, 0.3)' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-6px)' }
+                        },
+                        marquee: {
+                            '0%': { transform: 'translateX(100%)' },
+                            '100%': { transform: 'translateX(-100%)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background: radial-gradient(circle at 50% 15%, #0A224E 0%, #030C1E 70%, #01050E 100%);
+            background-attachment: fixed;
+        }
+
+        .glass-card-dp {
+            background: rgba(4, 16, 38, 0.82);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 240, 255, 0.15);
+        }
+
+        .text-cyan-glow {
+            color: #00F0FF;
+            text-shadow: 0 0 12px rgba(0, 240, 255, 0.7);
+        }
+
+        .text-orange-gradient {
+            background: linear-gradient(135deg, #FFF0B3 0%, #FFA800 30%, #FF6B00 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-orange-dp {
+            background: linear-gradient(135deg, #FFA800 0%, #FF6B00 50%, #D94800 100%);
+            color: #FFFFFF;
+            box-shadow: 0 6px 20px rgba(255, 107, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+        .btn-orange-dp:hover {
+            background: linear-gradient(135deg, #FFC038 0%, #FF7700 50%, #E65200 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(255, 107, 0, 0.7), inset 0 2px 0 rgba(255, 255, 255, 0.7);
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(2, 10, 24, 0.8);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 240, 255, 0.4);
+            border-radius: 6px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 240, 255, 0.8);
+        }
+
+        /* Winner modal scale keyframes */
+        @keyframes scaleWinner {
+            0% { transform: scale(0.3) rotate(-6deg); opacity: 0; }
+            70% { transform: scale(1.05) rotate(2deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        .animate-winner {
+            animation: scaleWinner 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Bulb light blinking effect */
+        .bulb-dp {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #11254A;
+            transition: all 0.2s ease;
+        }
+        .bulb-dp.on-cyan {
+            background-color: #00F0FF;
+            box-shadow: 0 0 10px #00F0FF, 0 0 18px #00F0FF;
+        }
+        .bulb-dp.on-orange {
+            background-color: #FF6B00;
+            box-shadow: 0 0 10px #FF6B00, 0 0 18px #FF6B00;
+        }
+        .bulb-dp.on-white {
+            background-color: #FFFFFF;
+            box-shadow: 0 0 10px #FFFFFF, 0 0 18px #FFFFFF;
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col font-sans overflow-x-hidden selection:bg-dp-cyan selection:text-black">
+
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div class="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-cyan-500/15 rounded-full blur-[140px]"></div>
+        <div class="absolute top-1/2 -left-40 w-96 h-96 bg-dp-orange/15 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-10 right-0 w-[500px] h-[500px] bg-blue-600/15 rounded-full blur-[150px]"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(rgba(0,240,255,0.05)_1px,transparent_1px)] [background-size:28px_28px]"></div>
+    </div>
+
+    <!-- MAIN APP STRUCTURE -->
+    <div class="relative z-10 flex flex-col min-h-screen">
+
+        <header class="w-full border-b border-dp-borderCyan glass-card-dp py-3 px-4 md:px-8 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+                
+                <!-- DATAPHONE & META VOLANTE LOGO HEADER -->
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center bg-dp-navy/90 px-4 py-2 rounded-2xl border border-dp-borderCyan shadow-md">
+                        <div class="flex flex-col">
+                            <div class="flex items-center gap-1">
+                                <span class="font-extrabold text-2xl md:text-3xl tracking-wider text-cyan-glow flex items-center">
+                                    D<span class="inline-block w-3 h-3 rounded-full bg-dp-orange mx-0.5 animate-pulse"></span>TA
+                                </span>
+                                <span class="font-extrabold text-2xl md:text-3xl tracking-wider text-orange-gradient">
+                                    PHONE
+                                </span>
+                            </div>
+                            <span class="text-[10px] text-dp-cyan/80 font-bold tracking-widest uppercase text-center -mt-1">
+                                CANAL MIXTO
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="hidden sm:block h-9 w-[1px] bg-dp-borderCyan"></div>
+
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-0.5 rounded-md bg-dp-orange text-black font-extrabold text-[11px] tracking-wider uppercase">
+                                META VOLANTE
+                            </span>
+                            <span class="text-xs text-dp-cyan font-bold tracking-widest uppercase">POSPAGO</span>
+                        </div>
+                        <h1 class="font-banner text-2xl md:text-3xl font-extrabold tracking-wide text-white leading-none mt-0.5">
+                            TÓMBOLA VIRTUAL DE SORTEOS
+                        </h1>
+                    </div>
+                </div>
+
+                <!-- Right Action Bar -->
+                <div class="flex items-center gap-3">
+                    <button id="soundToggleBtn" onclick="toggleSound()" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-dp-navy/90 hover:bg-black/60 border border-dp-borderCyan text-dp-cyan text-xs font-bold transition-all">
+                        <i id="soundIcon" class="fa-solid fa-volume-high text-dp-cyan"></i>
+                        <span id="soundText" class="hidden sm:inline">Sonido: ON</span>
+                    </button>
+
+                    <button onclick="confirmResetRaffle()" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-red-950/40 hover:bg-red-900/60 text-red-300 border border-red-500/40 text-xs font-bold transition-all">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>Reiniciar</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="w-full bg-gradient-to-r from-dp-navy via-dp-darkBlue to-dp-navy border-b border-dp-borderCyan/40 py-1.5 px-4 overflow-hidden">
+            <div class="max-w-7xl mx-auto flex items-center justify-between text-xs font-extrabold">
+                <div class="flex items-center gap-2 text-dp-orange uppercase tracking-wider whitespace-nowrap">
+                    <i class="fa-solid fa-bullhorn text-dp-cyan animate-bounce"></i>
+                    <span>¡ACTIVA MÁS, GANA MÁS, CRECE MÁS!</span>
+                </div>
+                <div class="hidden md:flex items-center gap-6 text-slate-300 text-[11px]">
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-chart-line text-dp-cyan"></i> MÁS PLANES = Más Crecimiento</span>
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-handshake text-dp-orange"></i> MÁS UNIDOS = Más Fuerza</span>
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-trophy text-yellow-400"></i> MÁS GANAMOS = Más Reconocimientos</span>
+                </div>
+            </div>
+        </div>
+
+        <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- Left Column: Tombola Stage -->
+            <section class="lg:col-span-7 flex flex-col items-center glass-card-dp rounded-3xl p-5 md:p-7 relative overflow-hidden">
+                
+                <div class="w-full flex justify-between items-center px-4 mb-2">
+                    <div id="topBulbs" class="flex gap-2.5 mx-auto"></div>
+                </div>
+
+                <div class="w-full flex justify-between items-center mb-2 px-2">
+                    <span class="px-3.5 py-1 rounded-full bg-dp-cyan/10 border border-dp-cyan/40 text-dp-cyan text-xs font-bold tracking-wider uppercase flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-dp-cyan animate-ping"></span>
+                        En Vivo Canal Mixto
+                    </span>
+                    
+                    <div class="flex items-center gap-3">
+                        <div id="activePrizeBadge" class="flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-dp-orange/20 border border-dp-orange text-xs font-bold text-dp-orangeLight">
+                            <i class="fa-solid fa-gift text-dp-orange"></i>
+                            <span id="activePrizeText">Premio: ₡35.000 PosPago</span>
+                        </div>
+
+                        <span id="participantCounter" class="text-xs font-bold text-slate-200 bg-dp-navy px-3.5 py-1 rounded-full border border-dp-borderCyan shadow-md">
+                            Boletos: <span id="counterNum" class="text-dp-cyan font-extrabold text-sm">0</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Tombola Drum Glass Sphere Stage -->
+                <div class="relative w-full aspect-square max-w-[450px] flex items-center justify-center my-2 p-2 rounded-full border-2 border-dp-cyan/40 bg-gradient-to-b from-dp-navy/60 to-black/80 shadow-[0_0_50px_rgba(0,240,255,0.2)]">
+                    <div class="absolute inset-4 rounded-full bg-gradient-to-tr from-dp-cyan/10 via-blue-600/10 to-dp-orange/15 blur-2xl"></div>
+                    <canvas id="tombolaCanvas" class="w-full h-full relative z-10 cursor-pointer" title="¡Haz clic en la tómbola para girar!"></canvas>
+                </div>
+
+                <!-- Spin Action Button Section -->
+                <div class="mt-4 w-full max-w-md flex flex-col items-center gap-3">
+                    <div class="w-full relative group">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-dp-orange via-dp-orangeLight to-dp-cyan rounded-2xl blur opacity-80 group-hover:opacity-100 transition duration-300 animate-pulse"></div>
+                        <button id="spinBtn" onclick="startSpin()" class="btn-orange-dp relative w-full py-4 px-8 rounded-2xl font-banner text-3xl tracking-widest transition-all transform active:scale-95 flex items-center justify-center gap-3 border border-yellow-200">
+                            <i class="fa-solid fa-arrows-spin text-2xl animate-spin-slow"></i>
+                            <span>¡GIRAR TÓMBOLA!</span>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-3 text-xs w-full justify-center">
+                        <button onclick="shuffleBalls()" class="px-4 py-2 rounded-xl bg-dp-navy/90 hover:bg-dp-darkBlue text-slate-200 border border-dp-borderCyan transition-all flex items-center gap-1.5 font-bold">
+                            <i class="fa-solid fa-shuffle text-dp-cyan"></i> Mezclar
+                        </button>
+                        <button onclick="testQuickExtract()" class="px-4 py-2 rounded-xl bg-dp-navy/90 hover:bg-dp-darkBlue text-slate-200 border border-dp-borderCyan transition-all flex items-center gap-1.5 font-bold">
+                            <i class="fa-solid fa-bolt text-dp-orange"></i> Giro Rápido
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="lg:col-span-5 flex flex-col gap-6">
+                
+                <div class="glass-card-dp rounded-3xl p-5 md:p-6">
+                    
+                    <!-- Mode Switcher Tabs -->
+                    <div class="flex p-1 bg-black/60 rounded-2xl border border-dp-borderCyan/40 mb-5">
+                        <button id="tabNamesBtn" onclick="switchMode('names')" class="flex-1 py-2.5 px-3 rounded-xl font-bold text-xs md:text-sm transition-all btn-orange-dp shadow-md">
+                            <i class="fa-solid fa-users mr-1"></i> Asesoras / Nombres
+                        </button>
+                        <button id="tabNumbersBtn" onclick="switchMode('numbers')" class="flex-1 py-2.5 px-3 rounded-xl font-bold text-xs md:text-sm text-slate-400 hover:text-white transition-all">
+                            <i class="fa-solid fa-ticket mr-1"></i> Boletos
+                        </button>
+                        <button id="tabPrizesBtn" onclick="switchMode('prizes')" class="flex-1 py-2.5 px-3 rounded-xl font-bold text-xs md:text-sm text-slate-400 hover:text-white transition-all">
+                            <i class="fa-solid fa-trophy mr-1"></i> Premios
+                        </button>
+                    </div>
+
+                    <!-- MODE 1: NAMES INPUT -->
+                    <div id="modeNames" class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <label class="block text-xs font-extrabold text-dp-cyan uppercase tracking-wider">
+                                Lista de Asesoras / Participantes
+                            </label>
+                            <span class="text-[11px] text-slate-400">(Una por línea)</span>
+                        </div>
+                        <textarea id="namesInput" rows="5" class="w-full bg-dp-navy/90 border border-dp-borderCyan rounded-2xl p-3.5 text-sm text-cyan-100 placeholder-slate-500 focus:outline-none focus:border-dp-cyan transition-all resize-none font-sans" placeholder="María Rodríguez&#10;Ana Fernández&#10;Laura Gómez&#10;Carmen Castillo&#10;Sofia Vargas"></textarea>
+                        
+                        <div class="flex gap-2">
+                            <button onclick="loadParticipantsFromNames()" class="flex-1 py-2.5 px-4 rounded-xl bg-dp-cyan/20 hover:bg-dp-cyan/30 border border-dp-cyan/50 text-dp-cyan font-bold text-xs md:text-sm transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-rotate"></i> Cargar Participantes
+                            </button>
+                            <button onclick="clearNamesInput()" class="px-3.5 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 text-xs font-bold" title="Limpiar lista">
+                                <i class="fa-solid fa-eraser"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- MODE 2: TICKET NUMBERS GENERATOR -->
+                    <div id="modeNumbers" class="space-y-4 hidden">
+                        <label class="block text-xs font-extrabold text-dp-cyan uppercase tracking-wider">
+                            Rango Numérico de Boletos Validados
+                        </label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-dp-navy/80 p-2.5 rounded-xl border border-dp-borderCyan/40">
+                                <span class="text-[11px] text-slate-400 block mb-1 font-semibold">Boleto Inicial:</span>
+                                <input id="numStart" type="number" value="1" min="1" class="w-full bg-black/80 border border-slate-700 rounded-lg p-2 text-center text-sm font-bold text-dp-cyan focus:outline-none focus:border-dp-cyan">
+                            </div>
+                            <div class="bg-dp-navy/80 p-2.5 rounded-xl border border-dp-borderCyan/40">
+                                <span class="text-[11px] text-slate-400 block mb-1 font-semibold">Boleto Final:</span>
+                                <input id="numEnd" type="number" value="30" min="1" class="w-full bg-black/80 border border-slate-700 rounded-lg p-2 text-center text-sm font-bold text-dp-cyan focus:outline-none focus:border-dp-cyan">
+                            </div>
+                        </div>
+                        <div class="bg-dp-navy/80 p-2.5 rounded-xl border border-dp-borderCyan/40">
+                            <span class="text-[11px] text-slate-400 block mb-1 font-semibold">Prefijo Boleto:</span>
+                            <input id="numPrefix" type="text" placeholder="Ej: PLAN #" value="PLAN #" class="w-full bg-black/80 border border-slate-700 rounded-lg p-2 text-sm text-slate-100 focus:outline-none focus:border-dp-cyan">
+                        </div>
+                        <button onclick="loadParticipantsFromNumbers()" class="w-full py-2.5 px-4 rounded-xl bg-dp-cyan/20 hover:bg-dp-cyan/30 border border-dp-cyan/50 text-dp-cyan font-bold text-xs md:text-sm transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-list-ol"></i> Generar Boletos Numéricos
+                        </button>
+                    </div>
+
+                    <!-- MODE 3: PRIZES MANAGER -->
+                    <div id="modePrizes" class="space-y-4 hidden">
+                        <label class="block text-xs font-extrabold text-dp-cyan uppercase tracking-wider">
+                            Premios de la Campaña Meta Volante
+                        </label>
+                        <div class="flex gap-2">
+                            <input id="prizeInput" type="text" placeholder="Ej: Premio de ₡35.000" class="flex-1 bg-dp-navy/90 border border-dp-borderCyan rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-dp-cyan">
+                            <button onclick="addPrize()" class="px-4 py-2.5 rounded-xl bg-dp-orange hover:bg-dp-orangeHover text-white font-bold text-xs transition-all">
+                                <i class="fa-solid fa-plus"></i> Añadir
+                            </button>
+                        </div>
+                        <div id="prizesContainer" class="space-y-2 max-h-36 overflow-y-auto pr-1"></div>
+                    </div>
+
+                    <!-- RAFFLE RULE SETTINGS -->
+                    <div class="mt-5 pt-4 border-t border-dp-borderCyan/30 flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <input id="removeWinnerToggle" type="checkbox" checked class="w-4 h-4 rounded border-slate-700 text-dp-orange focus:ring-dp-orange bg-black cursor-pointer">
+                            <label for="removeWinnerToggle" class="text-xs text-slate-300 font-semibold cursor-pointer select-none">
+                                Extraer sin repetición (Remover ganadora)
+                            </label>
+                        </div>
+                        <i class="fa-solid fa-circle-info text-dp-cyan text-xs" title="Si está activo, la persona ganadora no volverá a salir en la misma sesión"></i>
+                    </div>
+                </div>
+
+                <div class="glass-card-dp rounded-3xl p-5 md:p-6 flex-1 flex flex-col min-h-[260px]">
+                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-dp-borderCyan/30">
+                        <h2 class="font-banner text-2xl font-bold text-dp-orange flex items-center gap-2 tracking-wide">
+                            <i class="fa-solid fa-trophy text-yellow-400"></i> Historial de Ganadoras
+                        </h2>
+                        <button onclick="confirmClearWinnersHistory()" class="text-xs text-slate-400 hover:text-red-400 transition-colors flex items-center gap-1 font-semibold">
+                            <i class="fa-solid fa-trash-can"></i> Limpiar
+                        </button>
+                    </div>
+
+                    <div id="winnersList" class="flex-1 overflow-y-auto max-h-[220px] space-y-2.5 pr-1">
+                        <div id="emptyWinnersMsg" class="text-center py-10 text-slate-500 text-xs italic">
+                            <i class="fa-solid fa-ticket text-3xl mb-2 block text-dp-cyan/40"></i>
+                            Aún no hay extracciones.<br>¡Haz girar la tómbola para anunciar a la primera ganadora!
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="mt-auto py-3 text-center text-xs text-slate-400 border-t border-dp-borderCyan/20 bg-dp-navy/80">
+            <p class="font-semibold">DataPhone &copy; Campaña Meta Volante PosPago - Canal Mixto</p>
+        </footer>
+    </div>
+
+    <div id="winnerModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-card-dp border-2 border-dp-cyan rounded-3xl p-6 md:p-8 max-w-lg w-full text-center relative overflow-hidden animate-winner shadow-[0_0_80px_rgba(0,240,255,0.4)]">
+            
+            <div class="absolute -top-20 -left-20 w-48 h-48 bg-dp-cyan/30 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-20 -right-20 w-48 h-48 bg-dp-orange/30 rounded-full blur-3xl"></div>
+
+            <div class="relative z-10">
+                <div class="w-20 h-20 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-dp-orange via-dp-orangeLight to-yellow-300 flex items-center justify-center text-black text-4xl shadow-xl border-2 border-white">
+                    <i class="fa-solid fa-trophy animate-bounce"></i>
+                </div>
+
+                <span class="px-4 py-1 rounded-full bg-dp-cyan/20 text-dp-cyan text-xs font-extrabold uppercase tracking-widest border border-dp-cyan/50">
+                    ¡TENEMOS GANADORA!
+                </span>
+
+                <h3 id="modalWinnerName" class="font-sans text-3xl md:text-5xl font-black text-white my-5 tracking-wide drop-shadow-[0_0_15px_rgba(0,240,255,0.8)] break-words">
+                    ---
+                </h3>
+
+                <div id="modalPrizeAwarded" class="mb-4 p-3 rounded-2xl bg-dp-navy border border-dp-orange text-dp-orangeLight text-base font-extrabold shadow-md">
+                    <i class="fa-solid fa-gift text-dp-orange mr-2"></i>
+                    <span>Premio: <strong id="modalPrizeName" class="text-white">₡35.000 PosPago</strong></span>
+                </div>
+
+                <p id="modalWinnerDetail" class="text-xs text-slate-300 mb-6">
+                    Boleto extraído exitosamente de la tómbola virtual DataPhone
+                </p>
+
+                <div class="flex gap-3">
+                    <button onclick="closeWinnerModal()" class="btn-orange-dp flex-1 py-3.5 px-6 rounded-xl font-extrabold text-sm tracking-wider transition-all shadow-lg">
+                        Continuar Sorteo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOM CONFIRMATION MODAL -->
+    <div id="confirmModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+        <div class="glass-card-dp border border-dp-borderCyan rounded-2xl p-6 max-w-sm w-full text-center">
+            <i id="confirmIcon" class="fa-solid fa-circle-question text-3xl text-dp-cyan mb-3"></i>
+            <h4 id="confirmTitle" class="text-lg font-bold text-white mb-2">¿Estás seguro?</h4>
+            <p id="confirmText" class="text-xs text-slate-300 mb-5">Esta acción no se puede deshacer.</p>
+            <div class="flex gap-3">
+                <button onclick="closeConfirmModal(false)" class="flex-1 py-2 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs">Cancelar</button>
+                <button id="confirmYesBtn" onclick="closeConfirmModal(true)" class="flex-1 py-2 px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="confettiCanvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+    <script>
+        // Data models
+        let participants = [
+            "María Rodríguez",
+            "Ana Fernández",
+            "Laura Gómez",
+            "Carmen Castillo",
+            "Sofia Vargas",
+            "Valeria Morales",
+            "Daniela Rojas",
+            "Paula Jiménez"
+        ];
+        let winners = [];
+        let prizes = [
+            "Premio #1: ₡35.000 (PosPago)",
+            "Premio #2: ₡35.000 (PosPago)",
+            "Premio #3: ₡35.000 (PosPago)",
+            "Premio #4: ₡35.000 (PosPago)"
+        ];
+        let activePrizeIndex = 0;
+        let isSpinning = false;
+        let soundEnabled = true;
+        let currentMode = 'names'; 
+        let pendingConfirmCallback = null;
+
+        // Canvas & Physics
+        const canvas = document.getElementById('tombolaCanvas');
+        const ctx = canvas.getContext('2d');
+        let cageRotation = 0;
+        let rotationSpeed = 0;
+        let balls = [];
+        let animationFrameId = null;
+
+        // Web Audio Synth Context
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playRattleSound() {
+            if (!soundEnabled) return;
+            try {
+                initAudio();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(140 + Math.random() * 280, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.04);
+
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.04);
+            } catch (e) {}
+        }
+
+        function playFanfareSound() {
+            if (!soundEnabled) return;
+            try {
+                initAudio();
+                const notes = [293.66, 369.99, 440.00, 587.33, 739.99, 880.00];
+                notes.forEach((freq, index) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + index * 0.08);
+
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime + index * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + index * 0.08 + 0.35);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start(audioCtx.currentTime + index * 0.08);
+                    osc.stop(audioCtx.currentTime + index * 0.08 + 0.35);
+                });
+            } catch (e) {}
+        }
+
+        const ballColors = [
+            '#FF6B00', '#FFFFFF', '#FF8800', '#00F0FF', 
+            '#FFA800', '#FFFFFF', '#FF5500', '#FFFFFF'
+        ];
+
+        class Ball {
+            constructor(text) {
+                this.text = text;
+                const radiusLimit = 110;
+                const angle = Math.random() * Math.PI * 2;
+                const r = Math.random() * radiusLimit;
+                
+                this.x = Math.cos(angle) * r;
+                this.y = Math.sin(angle) * r;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = (Math.random() - 0.5) * 4;
+                this.radius = 13;
+                this.color = ballColors[Math.floor(Math.random() * ballColors.length)];
+            }
+
+            update(cageRadius, cageRotationSpeed) {
+                const speed = Math.abs(cageRotationSpeed);
+                if (speed > 0.01) {
+                    this.vx += (Math.random() - 0.5) * speed * 15;
+                    this.vy += (Math.random() - 0.5) * speed * 15;
+                }
+
+                this.vy += 0.16; // Gravity
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                this.vx *= 0.96; // Friction
+                this.vy *= 0.96;
+
+                const distFromCenter = Math.sqrt(this.x * this.x + this.y * this.y);
+                const maxDist = cageRadius - this.radius - 8;
+
+                if (distFromCenter > maxDist) {
+                    const angle = Math.atan2(this.y, this.x);
+                    this.x = Math.cos(angle) * maxDist;
+                    this.y = Math.sin(angle) * maxDist;
+
+                    const nx = Math.cos(angle);
+                    const ny = Math.sin(angle);
+                    const dot = this.vx * nx + this.vy * ny;
+                    this.vx = (this.vx - 2 * dot * nx) * 0.65;
+                    this.vy = (this.vy - 2 * dot * ny) * 0.65;
+
+                    if (speed > 0.03 && Math.random() < 0.22) {
+                        playRattleSound();
+                    }
+                }
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                
+                const grad = ctx.createRadialGradient(
+                    this.x - this.radius * 0.3, this.y - this.radius * 0.3, this.radius * 0.1,
+                    this.x, this.y, this.radius
+                );
+                
+                if (this.color === '#FFFFFF') {
+                    grad.addColorStop(0, '#FFFFFF');
+                    grad.addColorStop(0.6, '#E2E8F0');
+                    grad.addColorStop(1, '#94A3B8');
+                } else if (this.color === '#00F0FF') {
+                    grad.addColorStop(0, '#FFFFFF');
+                    grad.addColorStop(0.4, '#00F0FF');
+                    grad.addColorStop(1, '#005580');
+                } else {
+                    grad.addColorStop(0, '#FFF0B3');
+                    grad.addColorStop(0.4, '#FF6B00');
+                    grad.addColorStop(1, '#802600');
+                }
+                
+                ctx.fillStyle = grad;
+                ctx.fill();
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+                ctx.stroke();
+
+                ctx.fillStyle = this.color === '#FFFFFF' ? '#0F172A' : '#FFFFFF';
+                ctx.font = 'bold 8px Outfit';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const label = String(this.text).substring(0, 3);
+                ctx.fillText(label, this.x, this.y);
+                
+                ctx.restore();
+            }
+        }
+
+        function syncBallsWithParticipants() {
+            balls = [];
+            const count = Math.min(participants.length, 65);
+            for (let i = 0; i < count; i++) {
+                balls.push(new Ball(participants[i]));
+            }
+        }
+
+        function initCanvas() {
+            canvas.width = 450;
+            canvas.height = 450;
+        }
+
+        function drawTombola() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2 - 8;
+            const radius = 140;
+
+            ctx.save();
+            ctx.translate(centerX, centerY);
+
+            // Stand Base
+            ctx.beginPath();
+            ctx.moveTo(-radius * 0.8, radius + 40);
+            ctx.lineTo(-radius * 0.3, 0);
+            ctx.lineTo(radius * 0.3, 0);
+            ctx.lineTo(radius * 0.8, radius + 40);
+            ctx.closePath();
+            ctx.fillStyle = '#05122B';
+            ctx.fill();
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#FF6B00';
+            ctx.stroke();
+
+            // Wire Cage Rotation
+            ctx.save();
+            ctx.rotate(cageRotation);
+
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0, 240, 255, 0.05)';
+            ctx.fill();
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#00F0FF';
+            ctx.stroke();
+
+            // Cage internal ribs
+            const ribs = 8;
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = 'rgba(0, 240, 255, 0.35)';
+            for (let i = 0; i < ribs; i++) {
+                ctx.beginPath();
+                const radiusX = Math.abs(radius * Math.cos((i * Math.PI) / ribs));
+                ctx.ellipse(0, 0, radiusX, radius, 0, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // Draw Spheres
+            balls.forEach(ball => {
+                ball.update(radius, rotationSpeed);
+                ball.draw(ctx);
+            });
+
+            // Door Hatch
+            ctx.fillStyle = '#FF6B00';
+            ctx.fillRect(-22, -radius - 5, 44, 10);
+
+            ctx.restore();
+
+            // Central Axle
+            ctx.beginPath();
+            ctx.arc(0, 0, 14, 0, Math.PI * 2);
+            const axleGrad = ctx.createRadialGradient(0, 0, 2, 0, 0, 14);
+            axleGrad.addColorStop(0, '#FFFFFF');
+            axleGrad.addColorStop(0.5, '#00F0FF');
+            axleGrad.addColorStop(1, '#0A1B3A');
+            ctx.fillStyle = axleGrad;
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#FF6B00';
+            ctx.stroke();
+
+            ctx.restore();
+
+            cageRotation += rotationSpeed;
+            rotationSpeed *= 0.985;
+
+            updateBulbs(Math.abs(rotationSpeed) > 0.02);
+
+            animationFrameId = requestAnimationFrame(drawTombola);
+        }
+
+        function renderBulbs() {
+            const container = document.getElementById('topBulbs');
+            container.innerHTML = '';
+            for (let i = 0; i < 14; i++) {
+                const bulb = document.createElement('div');
+                bulb.className = 'bulb-dp';
+                bulb.id = `bulb-${i}`;
+                container.appendChild(bulb);
+            }
+        }
+
+        function updateBulbs(active) {
+            for (let i = 0; i < 14; i++) {
+                const bulb = document.getElementById(`bulb-${i}`);
+                if (!bulb) continue;
+                if (active) {
+                    const step = (Math.floor(Date.now() / 100) + i) % 3;
+                    if (step === 0) bulb.className = 'bulb-dp on-cyan';
+                    else if (step === 1) bulb.className = 'bulb-dp on-orange';
+                    else bulb.className = 'bulb-dp on-white';
+                } else {
+                    bulb.className = 'bulb-dp';
+                }
+            }
+        }
+
+        function switchMode(mode) {
+            currentMode = mode;
+            const namesBtn = document.getElementById('tabNamesBtn');
+            const numbersBtn = document.getElementById('tabNumbersBtn');
+            const prizesBtn = document.getElementById('tabPrizesBtn');
+            
+            const modeNames = document.getElementById('modeNames');
+            const modeNumbers = document.getElementById('modeNumbers');
+            const modePrizes = document.getElementById('modePrizes');
+
+            [namesBtn, numbersBtn, prizesBtn].forEach(b => b.className = "flex-1 py-2.5 px-3 rounded-xl font-bold text-xs md:text-sm text-slate-400 hover:text-white transition-all");
+            [modeNames, modeNumbers, modePrizes].forEach(m => m.classList.add('hidden'));
+
+            if (mode === 'names') {
+                namesBtn.className = "flex-1 py-2.5 px-3 rounded-xl font-bold text-xs md:text-sm transition-all btn-orange-dp shadow-md";
+                modeNames.classList.remove('hidden');
+                loadParticipantsFromNames();
+            } else if (mode === 'numbers') {
+                numbersBtn.className = "flex-1 py-2.5 px-3 rounded-xl font-bold text-xs md:text-sm transition-all btn-orange-dp shadow-md";
+                modeNumbers.classList.remove('hidden');
+                loadParticipantsFromNumbers();
+            } else if (mode === 'prizes') {
+                prizesBtn.className = "flex-1 py-2.5 px-3 rounded-xl font-bold text-xs md:text-sm transition-all btn-orange-dp shadow-md";
+                modePrizes.classList.remove('hidden');
+                renderPrizesUI();
+            }
+        }
+
+        function loadParticipantsFromNames() {
+            const rawText = document.getElementById('namesInput').value;
+            const list = rawText.split(/[\n,]+/).map(s => s.trim()).filter(s => s.length > 0);
+            participants = list;
+            updateCounter();
+            syncBallsWithParticipants();
+        }
+
+        function clearNamesInput() {
+            document.getElementById('namesInput').value = '';
+            participants = [];
+            updateCounter();
+            syncBallsWithParticipants();
+        }
+
+        function loadParticipantsFromNumbers() {
+            const start = parseInt(document.getElementById('numStart').value) || 1;
+            const end = parseInt(document.getElementById('numEnd').value) || 30;
+            const prefix = document.getElementById('numPrefix').value || '';
+
+            if (start > end) {
+                showCustomAlert("El número inicial no puede ser mayor al final.");
+                return;
+            }
+
+            const list = [];
+            for (let i = start; i <= end; i++) {
+                const formattedNum = String(i).padStart(String(end).length, '0');
+                list.push(`${prefix}${formattedNum}`);
+            }
+            participants = list;
+            updateCounter();
+            syncBallsWithParticipants();
+        }
+
+        function addPrize() {
+            const input = document.getElementById('prizeInput');
+            const val = input.value.trim();
+            if (val) {
+                prizes.push(val);
+                input.value = '';
+                renderPrizesUI();
+            }
+        }
+
+        function removePrize(idx) {
+            prizes.splice(idx, 1);
+            if (activePrizeIndex >= prizes.length) activePrizeIndex = Math.max(0, prizes.length - 1);
+            renderPrizesUI();
+        }
+
+        function selectActivePrize(idx) {
+            activePrizeIndex = idx;
+            renderPrizesUI();
+        }
+
+        function renderPrizesUI() {
+            const container = document.getElementById('prizesContainer');
+            const badge = document.getElementById('activePrizeBadge');
+            const badgeText = document.getElementById('activePrizeText');
+
+            if (prizes.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 italic py-2 text-center">No hay premios listados.</p>`;
+                badge.classList.add('hidden');
+                return;
+            }
+
+            badge.classList.remove('hidden');
+            badgeText.innerText = `Premio: ${prizes[activePrizeIndex] || 'General'}`;
+
+            container.innerHTML = prizes.map((p, idx) => `
+                <div class="flex items-center justify-between p-2.5 rounded-xl ${idx === activePrizeIndex ? 'bg-dp-orange/20 border border-dp-orange' : 'bg-dp-navy border border-dp-borderCyan/30'} text-xs">
+                    <div class="flex items-center gap-2 cursor-pointer flex-1" onclick="selectActivePrize(${idx})">
+                        <i class="fa-solid ${idx === activePrizeIndex ? 'fa-circle-dot text-dp-orange' : 'fa-circle text-slate-600'}"></i>
+                        <span class="${idx === activePrizeIndex ? 'font-bold text-white' : 'text-slate-300'}">${escapeHtml(p)}</span>
+                    </div>
+                    <button onclick="removePrize(${idx})" class="text-slate-500 hover:text-red-400 p-1">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function updateCounter() {
+            document.getElementById('counterNum').innerText = participants.length;
+        }
+
+        function shuffleBalls() {
+            if (participants.length === 0) return;
+            rotationSpeed = 0.35;
+            initAudio();
+        }
+
+        function startSpin() {
+            if (isSpinning) return;
+            if (participants.length === 0) {
+                showCustomAlert("¡No hay participantes en la tómbola! Agrega nombres o números primero.");
+                return;
+            }
+
+            initAudio();
+            isSpinning = true;
+            document.getElementById('spinBtn').disabled = true;
+            document.getElementById('spinBtn').classList.add('opacity-50', 'cursor-not-allowed');
+
+            rotationSpeed = 0.55 + Math.random() * 0.25;
+            const spinDuration = 3800 + Math.random() * 1200;
+
+            setTimeout(() => {
+                selectWinner();
+            }, spinDuration);
+        }
+
+        function testQuickExtract() {
+            if (isSpinning || participants.length === 0) return;
+            initAudio();
+            rotationSpeed = 0.65;
+            setTimeout(() => {
+                selectWinner();
+            }, 1200);
+        }
+
+        function selectWinner() {
+            if (participants.length === 0) return;
+
+            const winnerIndex = Math.floor(Math.random() * participants.length);
+            const winnerName = participants[winnerIndex];
+            const currentPrize = prizes.length > 0 ? prizes[activePrizeIndex] : null;
+
+            winners.unshift({
+                name: winnerName,
+                prize: currentPrize,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+            });
+
+            const shouldRemove = document.getElementById('removeWinnerToggle').checked;
+            if (shouldRemove) {
+                participants.splice(winnerIndex, 1);
+                updateCounter();
+                syncBallsWithParticipants();
+            }
+
+            renderWinnersList();
+            showWinnerModal(winnerName, currentPrize);
+
+            isSpinning = false;
+            document.getElementById('spinBtn').disabled = false;
+            document.getElementById('spinBtn').classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        function renderWinnersList() {
+            const listEl = document.getElementById('winnersList');
+            if (winners.length === 0) {
+                listEl.innerHTML = `
+                    <div id="emptyWinnersMsg" class="text-center py-10 text-slate-500 text-xs italic">
+                        <i class="fa-solid fa-ticket text-3xl mb-2 block text-dp-cyan/40"></i>
+                        Aún no hay extracciones.<br>¡Haz girar la tómbola para anunciar a la primera ganadora!
+                    </div>`;
+                return;
+            }
+
+            listEl.innerHTML = winners.map((w, index) => `
+                <div class="flex items-center justify-between p-3 rounded-2xl bg-dp-navy/90 border border-dp-borderCyan text-xs shadow-md">
+                    <div class="flex items-center gap-3">
+                        <span class="w-7 h-7 rounded-xl bg-gradient-to-tr from-dp-orange to-amber-500 text-white font-extrabold flex items-center justify-center text-xs shadow">
+                            #${winners.length - index}
+                        </span>
+                        <div>
+                            <span class="font-bold text-white block">${escapeHtml(w.name)}</span>
+                            ${w.prize ? `<span class="text-[11px] text-dp-cyan font-semibold"><i class="fa-solid fa-gift mr-1 text-dp-orange"></i>${escapeHtml(w.prize)}</span>` : ''}
+                        </div>
+                    </div>
+                    <span class="text-[10px] text-slate-400 font-mono">${w.time}</span>
+                </div>
+            `).join('');
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        }
+
+        function showWinnerModal(winnerName, prizeName) {
+            const modal = document.getElementById('winnerModal');
+            document.getElementById('modalWinnerName').innerText = winnerName;
+
+            const modalPrizeEl = document.getElementById('modalPrizeAwarded');
+            if (prizeName) {
+                document.getElementById('modalPrizeName').innerText = prizeName;
+                modalPrizeEl.classList.remove('hidden');
+            } else {
+                modalPrizeEl.classList.add('hidden');
+            }
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+            }, 10);
+
+            playFanfareSound();
+            triggerConfetti();
+        }
+
+        function closeWinnerModal() {
+            const modal = document.getElementById('winnerModal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function showCustomConfirm(title, message, callback) {
+            document.getElementById('confirmTitle').innerText = title;
+            document.getElementById('confirmText').innerText = message;
+            pendingConfirmCallback = callback;
+            const modal = document.getElementById('confirmModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+        }
+
+        function closeConfirmModal(result) {
+            const modal = document.getElementById('confirmModal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                if (result && pendingConfirmCallback) pendingConfirmCallback();
+                pendingConfirmCallback = null;
+            }, 200);
+        }
+
+        function showCustomAlert(message) {
+            showCustomConfirm("Notificación", message, null);
+            document.getElementById('confirmYesBtn').innerText = "Entendido";
+        }
+
+        function confirmClearWinnersHistory() {
+            showCustomConfirm(
+                "Limpiar Historial",
+                "¿Deseas borrar todo el historial de ganadoras registradas?",
+                () => {
+                    winners = [];
+                    renderWinnersList();
+                }
+            );
+        }
+
+        function confirmResetRaffle() {
+            showCustomConfirm(
+                "Reiniciar Tómbola",
+                "¿Restablecer el sorteo por completo? Se reiniciará la lista de participantes.",
+                () => {
+                    winners = [];
+                    renderWinnersList();
+                    if (currentMode === 'names') {
+                        loadParticipantsFromNames();
+                    } else if (currentMode === 'numbers') {
+                        loadParticipantsFromNumbers();
+                    }
+                }
+            );
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('soundIcon');
+            const text = document.getElementById('soundText');
+
+            if (soundEnabled) {
+                icon.className = "fa-solid fa-volume-high text-dp-cyan";
+                text.innerText = "Sonido: ON";
+            } else {
+                icon.className = "fa-solid fa-volume-xmark text-slate-500";
+                text.innerText = "Sonido: OFF";
+            }
+        }
+
+        const confettiCanvas = document.getElementById('confettiCanvas');
+        const cCtx = confettiCanvas.getContext('2d');
+        let confettiParticles = [];
+
+        function resizeConfetti() {
+            confettiCanvas.width = window.innerWidth;
+            confettiCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeConfetti);
+        resizeConfetti();
+
+        function triggerConfetti() {
+            confettiParticles = [];
+            const count = 200;
+            for (let i = 0; i < count; i++) {
+                confettiParticles.push({
+                    x: window.innerWidth / 2,
+                    y: window.innerHeight / 2 - 40,
+                    vx: (Math.random() - 0.5) * 22,
+                    vy: (Math.random() - 0.85) * 20,
+                    size: Math.random() * 10 + 4,
+                    color: ballColors[Math.floor(Math.random() * ballColors.length)],
+                    rotation: Math.random() * Math.PI * 2,
+                    vRot: (Math.random() - 0.5) * 0.3,
+                    life: 1
+                });
+            }
+            animateConfetti();
+        }
+
+        function animateConfetti() {
+            cCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+
+            confettiParticles.forEach((p, index) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.32; // Gravity
+                p.rotation += p.vRot;
+                p.life -= 0.008;
+
+                cCtx.save();
+                cCtx.translate(p.x, p.y);
+                cCtx.rotate(p.rotation);
+                cCtx.fillStyle = p.color;
+                cCtx.globalAlpha = Math.max(0, p.life);
+                cCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                cCtx.restore();
+
+                if (p.life <= 0) {
+                    confettiParticles.splice(index, 1);
+                }
+            });
+
+            if (confettiParticles.length > 0) {
+                requestAnimationFrame(animateConfetti);
+            }
+        }
+
+        window.onload = function() {
+            initCanvas();
+            renderBulbs();
+            renderPrizesUI();
+            
+            document.getElementById('namesInput').value = participants.join('\n');
+            loadParticipantsFromNames();
+            
+            drawTombola();
+
+            canvas.addEventListener('click', startSpin);
+        };
+    </script>
+</body>
+</html>
